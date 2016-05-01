@@ -4,6 +4,7 @@ go get github.com/farzadb82/orgpics
 ```
 ### Build
 ```
+go install github.com/m0rcq/go-exif
 go install github.com/farzadb82/orgpics
 ```
 ### Run
