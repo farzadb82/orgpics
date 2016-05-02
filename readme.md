@@ -17,7 +17,10 @@ If the DateTime value in the EXIF data is `2016:04:30 21:59:58`, the file will b
 
 ----------
 
-### License (MIT)
+### License
+
+This code is licensed under the MIT license below:
+
 **Copyright (c) 2016 Farzad Battiwalla**
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
