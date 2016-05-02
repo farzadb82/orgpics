@@ -40,41 +40,39 @@ func ProcessExifStream(exifFd *os.File) map[string]map[string]string {
 func decodeExifData(exifEntries []exif.IfdEntries) map[string]string {
     var exifTags = make(map[string]string)
 
-    fmt.Printf("exifEntries: %+v\n\n", exifEntries)
-    for i, v := range exifEntries {
-        fmt.Printf("v[%d]: %+v\n", i, v)
-        lval, ok := v.Values.([]interface{})
-        fmt.Printf("  lval: %+v\n  ok: %+v\n", lval, ok)
+    for _, v := range exifEntries {
+        // v.Values is an array of interface{} typed items, that can hold items of any type
+        // The command below converts the interface{} type back into an array of a specific type
+        // We then use teh swtch statement to convert any particular type into a string
+        lval := v.Values.([]interface{})
         var values string
-        if ok {
-            switch val := lval[0].(type) {
-            case string:
-                values = fmt.Sprintf("'%s'", val)
-            case byte:
-                values = fmt.Sprintf("%#x", val)
-            case []uint8:
-                var lstr []string
-                for _, v := range lval {
-                    lstr = append(lstr, fmt.Sprintf("%#x", v))
-                }
-                values = strings.Join(lstr, ", ")
-            case int16:
-                values = fmt.Sprintf("%d", val)
-            case int32:
-                values = fmt.Sprintf("%d", val)
-            case int64:
-                values = fmt.Sprintf("%d", val)
-            case uint16:
-                values = fmt.Sprintf("%d", val)
-            case uint32:
-                values = fmt.Sprintf("%d", val)
-            case uint64:
-                values = fmt.Sprintf("%d", val)
-            case *big.Rat:
-                values = fmt.Sprintf("%s", val.RatString())
-            default:
-                values = fmt.Sprintf("%v", lval)
+        switch val := lval[0].(type) {
+        case string:
+            values = fmt.Sprintf("'%s'", val)
+        case byte:
+            values = fmt.Sprintf("%#x", val)
+        case []uint8:
+            var lstr []string
+            for _, v := range lval {
+                lstr = append(lstr, fmt.Sprintf("%#x", v))
             }
+            values = strings.Join(lstr, ", ")
+        case int16:
+            values = fmt.Sprintf("%d", val)
+        case int32:
+            values = fmt.Sprintf("%d", val)
+        case int64:
+            values = fmt.Sprintf("%d", val)
+        case uint16:
+            values = fmt.Sprintf("%d", val)
+        case uint32:
+            values = fmt.Sprintf("%d", val)
+        case uint64:
+            values = fmt.Sprintf("%d", val)
+        case *big.Rat:
+            values = fmt.Sprintf("%s", val.RatString())
+        default:
+            values = fmt.Sprintf("%v", lval)
         }
         /*
             TagSection: exif.IfdSeqMap[v.IfdSeq]
