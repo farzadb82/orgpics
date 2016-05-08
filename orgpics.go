@@ -4,23 +4,38 @@ import (
     "os"
     "fmt"
     "log"
-    "math/big"
+    "flag"
     "strings"
     //"path/filepath"
+    "math/big"
     exif "github.com/m0rcq/go-exif"
 )
 
 func main() {
-    var imageFile string = "test_data/test_exif.jpg"
+    var outputDir string
+    var makeCopy bool
+    var overwrite bool
 
-    fmt.Println("Image file to process: ", imageFile)
-    f, err := os.Open(imageFile)
-    if err != nil {
-        log.Fatal(err)
+    flag.StringVar(&outputDir, "outputdir", ".", "Directory to re-write file to")
+    flag.BoolVar(&makeCopy, "copy", true, "Make a copy of the original file rather than moving")
+    flag.BoolVar(&overwrite, "overwrite", true, "Overwrite the target, if it exists")
+    flag.Parse()
+    fmt.Println(" Writing output to: ", outputDir)
+    fmt.Println("     Making a copy: ", makeCopy)
+    fmt.Println("Overwriting target: ", overwrite)
+    fmt.Println("-----------------------------------------------------------------------")
+
+    for _, inFile := range flag.Args() {
+        fmt.Println("Image file to process: ", inFile)
+        f, err := os.Open(inFile)
+        if err != nil {
+            log.Fatal(err)
+        }
+
+        var tags map[string]map[string]string = ProcessExifStream(f)
+        fmt.Printf("%+v\n", tags)
+        fmt.Println("-----------------------------------------------------------------------")
     }
-
-    var tags map[string]map[string]string = ProcessExifStream(f)
-    fmt.Printf("%+v\n", tags)
     //filepath.Walk(".", walkFunc)
 }
 
