@@ -5,7 +5,9 @@ import (
     "fmt"
     "log"
     "flag"
+    "time"
     "strings"
+    "path"
     //"path/filepath"
     "math/big"
     exif "github.com/m0rcq/go-exif"
@@ -32,11 +34,47 @@ func main() {
             log.Fatal(err)
         }
 
+        // Extract EXIF tags
         var tags map[string]map[string]string = ProcessExifStream(f)
-        fmt.Printf("%+v\n", tags)
+        fmt.Printf("tags: %+v\n", tags)
+        fmt.Printf("date: [%+v]\n", tags["Main"]["DateTime"])
+
+        // Convert the EXIF date string into a usable date/time object
+        fileDate, err := time.Parse("2006:01:02 15:04:05", tags["Main"]["DateTime"])
+        if (err != nil) {
+            log.Fatal(err)
+        }
+        fmt.Printf("DateTime: %+v\n", fileDate)
+
+        // Generate the output path given the date within EXIF
+        var outputPath string = path.Join(outputDir, fileDate.Format("2006-01-02"))
+        fmt.Println("Writing file to: ", outputPath)
+
+        // Does the output path exist?
+        canAccess, err := isAccessible(outputPath)
+        if (err != nil && ! os.IsNotExist(err)) {
+            log.Fatal(err)
+        }
+        if (! canAccess) {
+            os.MkdirAll(outputPath, os.ModeDir | 0755)
+        }
+
         fmt.Println("-----------------------------------------------------------------------")
     }
     //filepath.Walk(".", walkFunc)
+}
+
+func isAccessible(path string) (bool, error) {
+    // Attempt to get the stat of the file or directory
+    _, err := os.Stat(path)
+
+    // If we didn't get an error then we were able to stat the file or directory
+    if err == nil {
+        return true, nil
+    }
+
+    // We got an error. The file or directory either doesn't exist or cannot be accessed
+    return false, err
 }
 
 func ProcessExifStream(exifFd *os.File) map[string]map[string]string {
@@ -63,7 +101,7 @@ func decodeExifData(exifEntries []exif.IfdEntries) map[string]string {
         var values string
         switch val := lval[0].(type) {
         case string:
-            values = fmt.Sprintf("'%s'", val)
+            values = fmt.Sprintf("%s", val)
         case byte:
             values = fmt.Sprintf("%#x", val)
         case []uint8:
